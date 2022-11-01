@@ -1,76 +1,59 @@
 /** @format */
 
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styledComponents from "styled-components";
+import { getTodos, removeTodo, createToast } from "../redux-toolkit/features/todosSlice";
 
 function Todo() {
-  const [todos, setTodos] = useState([]);
-  const [show, setShow] = useState(false);
-  const url = "https://jsonplaceholder.typicode.com/todos";
-  var timeout = null;
-  const fetchData = async () => {
-    setShow(true);
-
-    fetch(url)
-      .then((res) => res.json())
-      .then((res) => {
-        setTodos([...res]);
-        setShow(false);
-      })
-      .catch((error) => console.log(error));
-  };
+  const dispatch = useDispatch();
+  const { todosList, isLoading } = useSelector((store) => store.todos);
+  var timeOut = null;
   const notify = (id) => {
-    if (timeout === null) {
-      timeout = window.setTimeout(() => {
-        timeout = null;
-        const uid = todos.filter((current) => current.userId === id);
+    if (timeOut === null) {
+      timeOut = window.setTimeout(() => {
+        timeOut = null;
+        const uid = todosList.filter((current) => current.userId === id);
         const usersid = uid[0].userId;
         fetch(`https://jsonplaceholder.typicode.com/users/${usersid}`)
           .then((response) => response.json())
           .then((res) => {
             toast(` ${res.name}  ${res.email}`);
           });
-      }, 300);
+      }, 200);
     }
   };
-  const deleteData = async (id) => {
-    window.clearTimeout(timeout);
-    timeout = null;
-    setTodos((current) => current.filter((todo) => todo.id !== id));
-  };
-
   return (
     <div>
       <Title>Todos</Title>
+
       <Button
         onClick={() => {
-          fetchData();
+          dispatch(getTodos("random"));
         }}
       >
-        fetch todos
+        {isLoading ? "Loading" : "fetch todos"}
       </Button>
+
       <Wrapper>
-        {show ? (
-          <div>
-            <h3>Loading...</h3>
-          </div>
-        ) : (
-          todos.map((product) => {
-            return (
-              <List>
-                <li
-                  onDoubleClick={() => deleteData(product.id)}
-                  key={product.id}
-                  onClick={() => notify(product.userId)}
-                >
-                  {product.title}
-                </li>
-              </List>
-            );
-          })
-        )}
+        {todosList.map((product) => {
+          return (
+            <List key={product.id}>
+              <li
+                onDoubleClick={() => {
+                  window.clearTimeout(timeOut);
+                  timeOut = null;
+                  dispatch(removeTodo(product.id));
+                }}
+                key={product.id}
+                onClick={() => notify(product.userId)}
+              >
+                {product.title}
+              </li>
+            </List>
+          );
+        })}
         <div>
           <ToastContainer
             position="top-right"
