@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styledComponents from "styled-components";
-import { getTodos, removeTodo, createToast } from "../redux-toolkit/features/todosSlice";
+import { getTodos, removeTodo } from "../redux-toolkit/features/todosSlice";
 
 function Todo() {
   const dispatch = useDispatch();
